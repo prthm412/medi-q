@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.db
+
+# C++ / CMake build artifacts
+build/
+*.o
+*.obj
+*.dll
+*.pyd
+CMakeCache.txt
+CMakeFiles/
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Environment & secrets
+.env
+.env.local
+
+# Editor
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Personal Markdown Documents
+workflow.md
+PROGRESS.md
+BENCHMARKS.md
+ARCHITECTURE.md
+API.md
