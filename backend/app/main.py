@@ -1,7 +1,11 @@
 from fastapi import FastAPI
+from app.api.routes import appointments, doctors, patients
 
 app = FastAPI(title="Medi-Q API", version="0.1.0")
 
+app.include_router(patients.router)
+app.include_router(doctors.router)
+app.include_router(appointments.router)
 
 @app.get("/health")
 def health_check():
