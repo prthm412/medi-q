@@ -1,18 +1,20 @@
 import uuid
 
+from app.core.security import create_access_token
 from app.models.enums import UserRole
 from app.models.user import User
 
 
-def _make_user(db_session, suffix: str, role: UserRole) -> User:
+def _make_user(db_session, suffix: str, role: UserRole):
     user = User(email=f"{role.value}-{suffix}@test.local", hashed_password="x", role=role)
     db_session.add(user)
     db_session.flush()
-    return user
+    token = create_access_token(subject=str(user.id), role=role.value)
+    return user, {"Authorization": f"Bearer {token}"}
 
 
-def _create_doctor(client, db_session, suffix: str) -> dict:
-    user = _make_user(db_session, suffix, UserRole.doctor)
+def _create_doctor(client, db_session, suffix: str):
+    user, headers = _make_user(db_session, suffix, UserRole.doctor)
     payload = {
         "user_id": str(user.id),
         "specialization": "General Medicine",
@@ -20,28 +22,28 @@ def _create_doctor(client, db_session, suffix: str) -> dict:
         "working_hours_end": "17:00:00",
         "max_daily_patients": 20,
     }
-    response = client.post("/doctors", json=payload)
+    response = client.post("/doctors", json=payload, headers=headers)
     assert response.status_code == 201
-    return response.json()
+    return response.json(), headers
 
 
-def _create_patient(client, db_session, suffix: str) -> dict:
-    user = _make_user(db_session, suffix, UserRole.patient)
+def _create_patient(client, db_session, suffix: str):
+    user, headers = _make_user(db_session, suffix, UserRole.patient)
     payload = {
         "user_id": str(user.id),
         "name": "Test Patient",
         "dob": "1990-01-01",
         "contact_info": "0000000000",
     }
-    response = client.post("/patients", json=payload)
+    response = client.post("/patients", json=payload, headers=headers)
     assert response.status_code == 201
-    return response.json()
+    return response.json(), headers
 
 
 def test_create_appointment_succeeds(client, db_session):
     suffix = uuid.uuid4().hex[:8]
-    doctor = _create_doctor(client, db_session, suffix)
-    patient = _create_patient(client, db_session, suffix)
+    doctor, _ = _create_doctor(client, db_session, suffix)
+    patient, patient_headers = _create_patient(client, db_session, suffix)
 
     payload = {
         "patient_id": patient["id"],
@@ -50,7 +52,7 @@ def test_create_appointment_succeeds(client, db_session):
         "scheduled_time": "2026-07-01T09:00:00Z",
         "urgency_level": 3,
     }
-    response = client.post("/appointments", json=payload)
+    response = client.post("/appointments", json=payload, headers=patient_headers)
     assert response.status_code == 201
     body = response.json()
     assert body["status"] == "scheduled"
@@ -59,9 +61,9 @@ def test_create_appointment_succeeds(client, db_session):
 
 def test_double_booking_same_doctor_rejected(client, db_session):
     suffix = uuid.uuid4().hex[:8]
-    doctor = _create_doctor(client, db_session, suffix)
-    patient_a = _create_patient(client, db_session, suffix + "a")
-    patient_b = _create_patient(client, db_session, suffix + "b")
+    doctor, _ = _create_doctor(client, db_session, suffix)
+    patient_a, headers_a = _create_patient(client, db_session, suffix + "a")
+    patient_b, headers_b = _create_patient(client, db_session, suffix + "b")
 
     slot = "2026-07-02T10:00:00Z"
 
@@ -71,7 +73,7 @@ def test_double_booking_same_doctor_rejected(client, db_session):
         "room_id": 2,
         "scheduled_time": slot,
         "urgency_level": 2,
-    })
+    }, headers=headers_a)
     assert first.status_code == 201
 
     second = client.post("/appointments", json={
@@ -80,14 +82,14 @@ def test_double_booking_same_doctor_rejected(client, db_session):
         "room_id": 3,
         "scheduled_time": slot,
         "urgency_level": 4,
-    })
+    }, headers=headers_b)
     assert second.status_code == 409
 
 
 def test_availability_excludes_booked_slot(client, db_session):
     suffix = uuid.uuid4().hex[:8]
-    doctor = _create_doctor(client, db_session, suffix)
-    patient = _create_patient(client, db_session, suffix)
+    doctor, doctor_headers = _create_doctor(client, db_session, suffix)
+    patient, patient_headers = _create_patient(client, db_session, suffix)
 
     booked_time = "2026-07-03T09:00:00Z"
     response = client.post("/appointments", json={
@@ -96,10 +98,14 @@ def test_availability_excludes_booked_slot(client, db_session):
         "room_id": 4,
         "scheduled_time": booked_time,
         "urgency_level": 1,
-    })
+    }, headers=patient_headers)
     assert response.status_code == 201
 
-    availability = client.get(f"/doctors/{doctor['id']}/availability", params={"date": "2026-07-03"})
+    availability = client.get(
+        f"/doctors/{doctor['id']}/availability",
+        params={"date": "2026-07-03"},
+        headers=doctor_headers,
+    )
     assert availability.status_code == 200
     slots = availability.json()["available_slots"]
     assert "09:00" not in slots

@@ -4,9 +4,11 @@ from datetime import date as date_type, datetime, time, timedelta, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.api.deps import get_current_user, require_role
 from app.db.session import get_db
 from app.models.appointment import Appointment
 from app.models.doctor import Doctor
+from app.models.enums import UserRole
 from app.models.user import User
 from app.schemas.doctor import AvailabilityResponse, DoctorCreate, DoctorRead, DoctorUpdate
 
@@ -15,8 +17,18 @@ router = APIRouter(prefix="/doctors", tags=["doctors"])
 SLOT_INTERVAL_MINUTES = 20
 
 
-@router.post("", response_model=DoctorRead, status_code=status.HTTP_201_CREATED)
-def create_doctor(payload: DoctorCreate, db: Session = Depends(get_db)):
+@router.post(
+    "", response_model=DoctorRead, status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_role(UserRole.doctor, UserRole.admin))],
+)
+def create_doctor(
+    payload: DoctorCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role == UserRole.doctor and payload.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Doctors can only create their own profile")
+
     user = db.query(User).filter(User.id == payload.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -31,12 +43,19 @@ def create_doctor(payload: DoctorCreate, db: Session = Depends(get_db)):
 
 
 @router.get("", response_model=list[DoctorRead])
-def list_doctors(db: Session = Depends(get_db)):
+def list_doctors(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     return db.query(Doctor).all()
 
 
 @router.get("/{doctor_id}", response_model=DoctorRead)
-def get_doctor(doctor_id: uuid.UUID, db: Session = Depends(get_db)):
+def get_doctor(
+    doctor_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor not found")
@@ -44,10 +63,17 @@ def get_doctor(doctor_id: uuid.UUID, db: Session = Depends(get_db)):
 
 
 @router.patch("/{doctor_id}", response_model=DoctorRead)
-def update_doctor(doctor_id: uuid.UUID, payload: DoctorUpdate, db: Session = Depends(get_db)):
+def update_doctor(
+    doctor_id: uuid.UUID,
+    payload: DoctorUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor not found")
+    if current_user.role != UserRole.admin and doctor.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this doctor")
 
     updates = payload.model_dump(exclude_unset=True)
     for field, value in updates.items():
@@ -63,6 +89,7 @@ def get_doctor_availability(
     doctor_id: uuid.UUID,
     date: date_type = Query(...),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     doctor = db.query(Doctor).filter(Doctor.id == doctor_id).first()
     if not doctor:
