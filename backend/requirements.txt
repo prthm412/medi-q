@@ -8,5 +8,6 @@ python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==4.0.1
 pytest
+pybind11
 httpx
 pydantic[email]
