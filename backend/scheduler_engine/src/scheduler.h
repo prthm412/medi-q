@@ -28,7 +28,12 @@ namespace scheduler_engine{
     struct ScheduleResult {
         std::vector<Assignment> assignments;
         std::vector<int> unassigned_patient_ids;
-        double objective_value;     // sum of urgency level * scheduled_time_min over assignments
+        // Sum of urgency_level * scheduled_time_min over assignments, plus
+        // urgency_level * max(doctor working_end_min) for each unassigned
+        // patient - being unseen today is charged as at least as costly as
+        // the worst possible same-day slot, so an algorithm can never improve
+        // its score by leaving a patient unassigned instead of seeing them late.
+        double objective_value; 
     };
 
     ScheduleResult optimize(std::vector<Patient> patients, std::vector<Doctor> doctors);

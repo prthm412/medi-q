@@ -43,6 +43,11 @@ namespace scheduler_engine {
             return a.wait_minutes > b.wait_minutes;
         });
 
+        int max_working_end = 0;
+        for (const auto& doc : doctors) {
+            max_working_end = std::max(max_working_end, doc.working_end_min);
+        }
+
         ScheduleResult result;
         result.objective_value = 0.0;
 
@@ -71,6 +76,7 @@ namespace scheduler_engine {
 
             if (!found) {
                 result.unassigned_patient_ids.push_back(patient.id);
+                result.objective_value += static_cast<double>(patient.urgency_level) * max_working_end;
                 continue;
             }
 
