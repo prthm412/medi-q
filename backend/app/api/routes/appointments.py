@@ -8,10 +8,11 @@ from app.api.deps import get_current_user, require_role
 from app.db.session import get_db
 from app.models.appointment import Appointment
 from app.models.doctor import Doctor
-from app.models.enums import UserRole
+from app.models.enums import AppointmentStatus, UserRole
 from app.models.patient import Patient
 from app.models.user import User
 from app.schemas.appointment import AppointmentCreate, AppointmentRead, AppointmentStatusUpdate
+from app.services import queue_manager
 
 router = APIRouter(prefix="/appointments", tags=["appointments"])
 
@@ -100,7 +101,19 @@ def update_appointment_status(
         if not doctor or doctor.id != appointment.doctor_id:
             raise HTTPException(status_code=403, detail="Not authorized to update this appointment")
 
+    # A patient leaving "scheduled" (completed, in_progress, or no_show) means
+    # they're no longer waiting — pull them out of the live queue and push
+    # fresh positions to whoever's still behind them.
+    leaving_queue = (
+        appointment.status == AppointmentStatus.scheduled
+        and payload.status != AppointmentStatus.scheduled
+    )
+
     appointment.status = payload.status
     db.commit()
     db.refresh(appointment)
+
+    if leaving_queue:
+        queue_manager.remove_and_rebroadcast(appointment.doctor_id, appointment.patient_id)
+
     return appointment

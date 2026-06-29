@@ -6,6 +6,7 @@ class Settings:
     REDIS_URL: str = os.environ.get("REDIS_URL", "redis://redis:6379/0")
     JWT_SECRET: str = os.environ.get("JWT_SECRET", "changeme")
     JWT_ALGORITHM: str = os.environ.get("JWT_ALGORITHM", "HS256")
+    AVG_CONSULTATION_MINUTES: int = int(os.environ.get("AVG_CONSULTATION_MINUTES", "15"))
 
 
 settings = Settings()   
