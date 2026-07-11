@@ -13,6 +13,7 @@ class Doctor(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(nullable=False)
     specialization: Mapped[str] = mapped_column(nullable=False)
     working_hours_start: Mapped[time] = mapped_column(Time, nullable=False)
     working_hours_end: Mapped[time] = mapped_column(Time, nullable=False)
