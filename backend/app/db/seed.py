@@ -12,9 +12,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SEED_PASSWORD = "seed_password_123"  # synthetic dev accounts only, never real credentials
 
 SEED_DOCTORS = [
-    {"email": "dr.sharma@mediq.test", "specialization": "General Medicine", "start": time(9, 0), "end": time(17, 0), "max_daily": 20},
-    {"email": "dr.iyer@mediq.test", "specialization": "Pediatrics", "start": time(10, 0), "end": time(18, 0), "max_daily": 15},
-    {"email": "dr.khan@mediq.test", "specialization": "Cardiology", "start": time(9, 0), "end": time(13, 0), "max_daily": 10},
+    {"email": "dr.sharma@mediq.test", "name": "Dr. Anjali Sharma", "specialization": "General Medicine", "start": time(9, 0), "end": time(17, 0), "max_daily": 20},
+    {"email": "dr.iyer@mediq.test", "name": "Dr. Karthik Iyer", "specialization": "Pediatrics", "start": time(10, 0), "end": time(18, 0), "max_daily": 15},
+    {"email": "dr.khan@mediq.test", "name": "Dr. Ayesha Khan", "specialization": "Cardiology", "start": time(9, 0), "end": time(13, 0), "max_daily": 10},
 ]
 
 SEED_PATIENTS = [
@@ -44,6 +44,7 @@ def seed() -> None:
             if not db.query(Doctor).filter(Doctor.user_id == user.id).first():
                 db.add(Doctor(
                     user_id=user.id,
+                    name=d["name"],
                     specialization=d["specialization"],
                     working_hours_start=d["start"],
                     working_hours_end=d["end"],

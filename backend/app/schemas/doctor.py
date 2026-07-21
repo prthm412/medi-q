@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class DoctorCreate(BaseModel):
     user_id: uuid.UUID
+    name: str
     specialization: str
     working_hours_start: time
     working_hours_end: time
@@ -13,6 +14,7 @@ class DoctorCreate(BaseModel):
 
 
 class DoctorUpdate(BaseModel):
+    name: str | None = None
     specialization: str | None = None
     working_hours_start: time | None = None
     working_hours_end: time | None = None
@@ -24,6 +26,7 @@ class DoctorRead(BaseModel):
 
     id: uuid.UUID
     user_id: uuid.UUID
+    name: str
     specialization: str
     working_hours_start: time
     working_hours_end: time
