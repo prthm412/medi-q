@@ -13,6 +13,7 @@ class MedicalRecord(Base):
     __tablename__ = "medical_records"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    appointment_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("appointments.id"), nullable=True)
     patient_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("patients.id"), nullable=False)
     doctor_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("doctors.id"), nullable=False)
     notes: Mapped[str] = mapped_column(Text, nullable=False)
@@ -20,3 +21,4 @@ class MedicalRecord(Base):
 
     patient = relationship("Patient")
     doctor = relationship("Doctor")
+    appointment = relationship("Appointment")
