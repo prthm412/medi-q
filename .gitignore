@@ -30,6 +30,8 @@ frontend/.vite/
 .vscode/
 *.swp
 
+*.pdf
+
 # OS
 .DS_Store
 Thumbs.db
