@@ -12,17 +12,17 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SEED_PASSWORD = "seed_password_123"  # synthetic dev accounts only, never real credentials
 
 SEED_DOCTORS = [
-    {"email": "dr.sharma@mediq.test", "name": "Dr. Anjali Sharma", "specialization": "General Medicine", "start": time(9, 0), "end": time(17, 0), "max_daily": 20},
-    {"email": "dr.iyer@mediq.test", "name": "Dr. Karthik Iyer", "specialization": "Pediatrics", "start": time(10, 0), "end": time(18, 0), "max_daily": 15},
-    {"email": "dr.khan@mediq.test", "name": "Dr. Ayesha Khan", "specialization": "Cardiology", "start": time(9, 0), "end": time(13, 0), "max_daily": 10},
+    {"email": "dr.sharma@mediq.dev", "name": "Dr. Anjali Sharma", "specialization": "General Medicine", "start": time(9, 0), "end": time(17, 0), "max_daily": 20},
+    {"email": "dr.iyer@mediq.dev", "name": "Dr. Karthik Iyer", "specialization": "Pediatrics", "start": time(10, 0), "end": time(18, 0), "max_daily": 15},
+    {"email": "dr.khan@mediq.dev", "name": "Dr. Ayesha Khan", "specialization": "Cardiology", "start": time(9, 0), "end": time(13, 0), "max_daily": 10},
 ]
 
 SEED_PATIENTS = [
-    {"email": "patient1@mediq.test", "name": "Asha Verma", "dob": date(1990, 4, 12), "contact_info": "9990000001"},
-    {"email": "patient2@mediq.test", "name": "Rohan Gupta", "dob": date(1985, 11, 2), "contact_info": "9990000002"},
-    {"email": "patient3@mediq.test", "name": "Meera Nair", "dob": date(2001, 7, 23), "contact_info": "9990000003"},
-    {"email": "patient4@mediq.test", "name": "Vikram Singh", "dob": date(1978, 1, 30), "contact_info": "9990000004"},
-    {"email": "patient5@mediq.test", "name": "Priya Das", "dob": date(1995, 9, 15), "contact_info": "9990000005"},
+    {"email": "patient1@mediq.dev", "name": "Asha Verma", "dob": date(1990, 4, 12), "contact_info": "9990000001"},
+    {"email": "patient2@mediq.dev", "name": "Rohan Gupta", "dob": date(1985, 11, 2), "contact_info": "9990000002"},
+    {"email": "patient3@mediq.dev", "name": "Meera Nair", "dob": date(2001, 7, 23), "contact_info": "9990000003"},
+    {"email": "patient4@mediq.dev", "name": "Vikram Singh", "dob": date(1978, 1, 30), "contact_info": "9990000004"},
+    {"email": "patient5@mediq.dev", "name": "Priya Das", "dob": date(1995, 9, 15), "contact_info": "9990000005"},
 ]
 
 

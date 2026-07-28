@@ -16,7 +16,7 @@ def _make_doctor(db, suffix):
     db.add(user)
     db.flush()
     doctor = Doctor(
-        user_id=user.id, specialization="General Medicine",
+        user_id=user.id, name="Test Doctor", specialization="General Medicine",
         working_hours_start=time(9, 0), working_hours_end=time(17, 0),
         max_daily_patients=20,
     )

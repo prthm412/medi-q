@@ -18,6 +18,7 @@ def _create_doctor(client, db_session, suffix: str):
     user, token, headers = _make_user(db_session, suffix, UserRole.doctor)
     payload = {
         "user_id": str(user.id),
+        "name": "Test Doctor",
         "specialization": "General Medicine",
         "working_hours_start": "09:00:00",
         "working_hours_end": "17:00:00",

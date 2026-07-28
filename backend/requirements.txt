@@ -12,3 +12,4 @@ pybind11
 httpx
 pydantic[email]
 weasyprint
+jinja2
