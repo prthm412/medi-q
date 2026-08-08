@@ -11,6 +11,7 @@ from app.models.doctor import Doctor
 from app.models.enums import UserRole
 from app.models.user import User
 from app.schemas.doctor import AvailabilityResponse, DoctorCreate, DoctorRead, DoctorUpdate
+from app.schemas.appointment import AppointmentRead
 
 router = APIRouter(prefix="/doctors", tags=["doctors"])
 
@@ -58,6 +59,16 @@ def get_my_doctor_profile(
     if not doctor:
         raise HTTPException(status_code=404, detail="No doctor profile for this user")
     return doctor
+
+@router.get("/me/appointments", response_model=list[AppointmentRead])
+def get_my_doctor_appointments(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    doctor = db.query(Doctor).filter(Doctor.user_id == current_user.id).first()
+    if not doctor:
+        raise HTTPException(status_code=404, detail="No doctor profile for this user")
+    return db.query(Appointment).filter(Appointment.doctor_id == doctor.id).all()
 
 @router.get("/{doctor_id}", response_model=DoctorRead)
 def get_doctor(
