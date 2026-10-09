@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Login } from "@/pages/Login";
 import { Signup } from "@/pages/Signup";
 import { PatientPortal } from "./pages/PatientPortal";
+import { DoctorPortal } from "@/pages/DoctorPortal";
 
 function RoleRedirect() {
   const { user } = useAuth();
@@ -40,7 +41,7 @@ function App() {
             path="/doctor"
             element={
               <ProtectedRoute allowedRoles={["doctor"]}>
-                <div className="p-8">Doctor Portal placeholder</div>
+                <DoctorPortal />
               </ProtectedRoute>
             }
           />

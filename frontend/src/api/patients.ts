@@ -10,3 +10,8 @@ export async function getPatientAppointments(patientId: string): Promise<Appoint
   const response = await apiClient.get<Appointment[]>(`/patients/${patientId}/appointments`);
   return response.data;
 }
+
+export async function getPatient(patientId: string): Promise<Patient> {
+  const response = await apiClient.get<Patient>(`/patients/${patientId}`);
+  return response.data;
+}
