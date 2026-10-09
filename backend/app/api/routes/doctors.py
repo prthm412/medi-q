@@ -12,10 +12,15 @@ from app.models.enums import UserRole
 from app.models.user import User
 from app.schemas.doctor import AvailabilityResponse, DoctorCreate, DoctorRead, DoctorUpdate
 from app.schemas.appointment import AppointmentRead
+from app.core.config import settings
+
+from zoneinfo import ZoneInfo
 
 router = APIRouter(prefix="/doctors", tags=["doctors"])
 
 SLOT_INTERVAL_MINUTES = 20
+
+CLINIC_TZ = ZoneInfo(settings.CLINIC_TIMEZONE)
 
 
 @router.post(
@@ -115,11 +120,11 @@ def get_doctor_availability(
     if not doctor:
         raise HTTPException(status_code=404, detail="Doctor not found")
 
-    day_start = datetime.combine(date, time.min, tzinfo=timezone.utc)
-    day_end = datetime.combine(date, time.max, tzinfo=timezone.utc)
+    day_start = datetime.combine(date, time.min, tzinfo=CLINIC_TZ).astimezone(timezone.utc)
+    day_end = day_start + timedelta(days=1)
 
     booked_times = {
-        appt.scheduled_time
+        appt.scheduled_time.astimezone(timezone.utc)
         for appt in db.query(Appointment)
         .filter(
             Appointment.doctor_id == doctor_id,
@@ -130,13 +135,14 @@ def get_doctor_availability(
     }
 
     slots = []
-    current = datetime.combine(date, doctor.working_hours_start, tzinfo=timezone.utc)
-    end = datetime.combine(date, doctor.working_hours_end, tzinfo=timezone.utc)
+    current = datetime.combine(date, doctor.working_hours_start, tzinfo=CLINIC_TZ)
+    end = datetime.combine(date, doctor.working_hours_end, tzinfo=CLINIC_TZ)
     step = timedelta(minutes=SLOT_INTERVAL_MINUTES)
 
     while current < end:
-        if current not in booked_times:
-            slots.append(current.strftime("%H:%M"))
+        current_utc = current.astimezone(timezone.utc)
+        if current_utc not in booked_times:
+            slots.append(current_utc.strftime("%Y-%m-%dT%H:%M:%SZ"))
         current += step
 
     return AvailabilityResponse(doctor_id=doctor_id, date=date.isoformat(), available_slots=slots)

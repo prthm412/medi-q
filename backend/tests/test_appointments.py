@@ -92,22 +92,20 @@ def test_availability_excludes_booked_slot(client, db_session):
     doctor, doctor_headers = _create_doctor(client, db_session, suffix)
     patient, patient_headers = _create_patient(client, db_session, suffix)
 
-    booked_time = "2026-07-03T09:00:00Z"
+    url = f"/doctors/{doctor['id']}/availability"
+    params = {"date": "2026-07-03"}
+    before = client.get(url, params=params, headers=doctor_headers).json()["available_slots"]
+    booked_slot, next_slot = before[0], before[1]
+
     response = client.post("/appointments", json={
         "patient_id": patient["id"],
         "doctor_id": doctor["id"],
         "room_id": 4,
-        "scheduled_time": booked_time,
+        "scheduled_time": booked_slot,
         "urgency_level": 1,
     }, headers=patient_headers)
     assert response.status_code == 201
 
-    availability = client.get(
-        f"/doctors/{doctor['id']}/availability",
-        params={"date": "2026-07-03"},
-        headers=doctor_headers,
-    )
-    assert availability.status_code == 200
-    slots = availability.json()["available_slots"]
-    assert "09:00" not in slots
-    assert "09:20" in slots
+    after = client.get(url, params=params, headers=doctor_headers).json()["available_slots"]
+    assert booked_slot not in after
+    assert next_slot in after

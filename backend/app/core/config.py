@@ -7,6 +7,7 @@ class Settings:
     JWT_SECRET: str = os.environ.get("JWT_SECRET", "changeme")
     JWT_ALGORITHM: str = os.environ.get("JWT_ALGORITHM", "HS256")
     AVG_CONSULTATION_MINUTES: int = int(os.environ.get("AVG_CONSULTATION_MINUTES", "15"))
+    CLINIC_TIMEZONE: str = os.environ.get("CLINIC_TIMEZONE", "UTC")
 
 
 settings = Settings()   

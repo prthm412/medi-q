@@ -13,3 +13,4 @@ httpx
 pydantic[email]
 weasyprint
 jinja2
+tzdata

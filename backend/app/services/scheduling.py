@@ -7,18 +7,23 @@ from sqlalchemy.orm import Session
 from app.models.appointment import Appointment
 from app.models.doctor import Doctor
 from app.models.enums import AppointmentStatus
+from app.core.config import settings
 
+from zoneinfo import ZoneInfo
+
+CLINIC_TZ = ZoneInfo(settings.CLINIC_TIMEZONE)
 
 def _time_to_min(t: time) -> int:
     return t.hour * 60 + t.minute
 
 
 def _min_to_datetime(day: date_type, minutes: int) -> datetime:
-    return datetime.combine(day, time.min, tzinfo=timezone.utc) + timedelta(minutes=minutes)
+    local = datetime.combine(day, time.min, tzinfo=CLINIC_TZ) + timedelta(minutes=minutes)
+    return local.astimezone(timezone.utc)
 
 
 def optimize_day(db: Session, target_date: date_type) -> dict:
-    day_start = datetime.combine(target_date, time.min, tzinfo=timezone.utc)
+    day_start = datetime.combine(target_date, time.min, tzinfo=CLINIC_TZ).astimezone(timezone.utc)
     day_end = day_start + timedelta(days=1)
 
     appointments = (

@@ -47,11 +47,8 @@ export function BookingCalendar() {
     const dateStr = format(date, "yyyy-MM-dd");
     const availability = await getDoctorAvailability(doctorId, dateStr);
     const slots: SlotEvent[] = availability.available_slots.map((time) => {
-      const [hours, minutes] = time.split(":").map(Number);
-      const start = new Date(date);
-      start.setHours(hours, minutes, 0, 0);
-      const end = new Date(start);
-      end.setMinutes(end.getMinutes() + 20);
+      const start = new Date(time);
+      const end = new Date(start.getTime() + 20 * 60000);
       return { title: "Available", start, end };
     });
     setEvents(slots);
@@ -69,6 +66,10 @@ export function BookingCalendar() {
   function handleSelectSlot(slotInfo: SlotInfo) {
     const matchingEvent = events.find((e) => e.start.getTime() === slotInfo.start.getTime());
     if (matchingEvent) setSelectedSlot(matchingEvent.start);
+  }
+
+  function handleSelectEvent(event: SlotEvent) {
+    setSelectedSlot(event.start);
   }
 
   async function confirmBooking() {
@@ -122,6 +123,7 @@ export function BookingCalendar() {
             onSelectSlot={handleSelectSlot}
             step={20}
             timeslots={1}
+            onSelectEvent={handleSelectEvent}
           />
         </div>
       )}
