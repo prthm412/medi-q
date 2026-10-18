@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MedicalRecordsPanel } from "./MedicalRecordsPanel";
 import type { Appointment, Patient, AppointmentStatus } from "@/types";
+import { downloadPrescription } from "@/api/documents";
 
 const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   scheduled: "default",
@@ -36,6 +37,14 @@ export function TodaysSchedule() {
       })
     );
     setPatients(patientMap);
+  }
+
+    async function handlePrescription(appointmentId: string) {
+    try {
+      await downloadPrescription(appointmentId);
+    } catch {
+      alert("No prescription available for this visit.");
+    }
   }
 
   useEffect(() => {
@@ -73,6 +82,11 @@ export function TodaysSchedule() {
                 {a.status !== "completed" && (
                   <Button size="sm" onClick={() => handleMarkComplete(a.id)}>
                     Mark Complete
+                  </Button>
+                )}
+                {a.status === "completed" && (
+                  <Button size="sm" variant="outline" onClick={() => handlePrescription(a.id)}>
+                    Prescription
                   </Button>
                 )}
               </TableCell>
