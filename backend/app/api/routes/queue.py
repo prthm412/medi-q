@@ -47,6 +47,26 @@ def check_in(
 
     return QueuePositionResponse(patient_id=appointment.patient_id, **position_data)
 
+@router.get("/queue/position/{appointment_id}", response_model=QueuePositionResponse)
+def get_queue_position(
+    appointment_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.patient, UserRole.admin)),
+):
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Appointment not found")
+
+    if current_user.role == UserRole.patient:
+        patient = db.query(Patient).filter(Patient.user_id == current_user.id).first()
+        if not patient or appointment.patient_id != patient.id:
+            raise HTTPException(status_code=404, detail="Appointment not found")
+
+    position_data = queue_manager.get_position(appointment.doctor_id, appointment.patient_id)
+    if position_data is None:
+        raise HTTPException(status_code=404, detail="Not checked in")
+
+    return QueuePositionResponse(patient_id=appointment.patient_id, **position_data)
 
 @router.websocket("/ws/queue/{doctor_id}")
 async def queue_websocket(

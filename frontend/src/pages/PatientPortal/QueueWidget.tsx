@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { getMyPatientProfile, getPatientAppointments } from "@/api/patients";
-import { checkIn } from "@/api/queue";
+import { checkIn, getQueuePosition } from "@/api/queue";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Appointment, QueuePositionUpdate } from "@/types";
@@ -23,17 +23,26 @@ export function QueueWidget() {
         (a) => a.status === "scheduled" && new Date(a.scheduled_time).toDateString() === today
       );
       setTodaysAppointment(match ?? null);
+      if (match) {
+        const existing = await getQueuePosition(match.id);
+        if (existing) {
+          setPosition(existing.position);
+          setWaitMinutes(existing.estimated_wait_minutes);
+          setCheckedIn(true);
+          connectWebSocket(match.doctor_id, patient.id);
+        }
+      }
     }
     load();
   }, []);
 
-  function connectWebSocket(doctorId: string) {
+  function connectWebSocket(doctorId: string, ownPatientId: string) {
     const token = localStorage.getItem("mediqueue_token");
     const wsUrl = `ws://localhost:8000/ws/queue/${doctorId}?token=${token}`;
     const ws = new WebSocket(wsUrl);
     ws.onmessage = (event) => {
       const data: QueuePositionUpdate = JSON.parse(event.data);
-      if (data.type === "position_update" && data.patient_id === patientId) {
+      if (data.type === "position_update" && data.patient_id === ownPatientId) {
         setPosition(data.position);
         setWaitMinutes(data.estimated_wait_minutes);
       }
@@ -51,7 +60,7 @@ export function QueueWidget() {
     setPosition(result.position);
     setWaitMinutes(result.estimated_wait_minutes);
     setCheckedIn(true);
-    connectWebSocket(todaysAppointment.doctor_id);
+    connectWebSocket(todaysAppointment.doctor_id, patientId);
   }
 
   if (!todaysAppointment) {
