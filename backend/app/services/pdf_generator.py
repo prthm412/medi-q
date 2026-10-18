@@ -4,6 +4,9 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
+from zoneinfo import ZoneInfo
+from app.core.config import settings
+
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 _env = Environment(loader=FileSystemLoader(TEMPLATES_DIR))
 
@@ -25,6 +28,6 @@ def render_prescription_pdf(
         appointment_time=appointment_time,
         urgency_level=urgency_level,
         notes=notes,
-        generated_at=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        generated_at=datetime.now(ZoneInfo(settings.CLINIC_TIMEZONE)).strftime("%Y-%m-%d %H:%M %Z"),
     )
     return HTML(string=html_content).write_pdf()

@@ -12,9 +12,13 @@ from app.models.medical_record import MedicalRecord
 from app.models.patient import Patient
 from app.models.user import User
 from app.services.pdf_generator import render_prescription_pdf
+from app.core.config import settings
+
+from zoneinfo import ZoneInfo
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
+CLINIC_TZ = ZoneInfo(settings.CLINIC_TIMEZONE)
 
 @router.get("/{appointment_id}/prescription")
 def get_prescription(
@@ -45,7 +49,7 @@ def get_prescription(
         patient_name=patient.name,
         doctor_name=doctor.name,
         doctor_specialization=doctor.specialization,
-        appointment_time=appointment.scheduled_time.strftime("%Y-%m-%d %H:%M UTC"),
+        appointment_time=appointment.scheduled_time.astimezone(CLINIC_TZ).strftime("%Y-%m-%d %H:%M %Z"),
         urgency_level=appointment.urgency_level,
         notes=medical_record.notes,
     )
