@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { OptimizerPanel } from "./OptimizerPanel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AnalyticsPanel } from "./AnalyticsPanel"
 
 export function AdminDashboard() {
   const { logout } = useAuth();
@@ -19,6 +20,14 @@ export function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <OptimizerPanel />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Analytics</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AnalyticsPanel />
         </CardContent>
       </Card>
     </div>

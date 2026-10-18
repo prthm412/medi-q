@@ -81,3 +81,17 @@ export interface AuditLogEntry {
   target_id: string;
   timestamp: string;
 }
+
+export interface DailyStats {
+  date: string;
+  booked: number;
+  completed: number;
+  no_show: number;
+  capacity: number;
+  occupancy_pct: number;
+}
+
+export interface AnalyticsSummary {
+  days: DailyStats[];
+  no_show_rate_pct: number;
+}
