@@ -3,6 +3,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone
 
 from app.api.deps import get_current_user, require_role
 from app.db.session import get_db
@@ -109,6 +110,8 @@ def update_appointment_status(
         and payload.status != AppointmentStatus.scheduled
     )
 
+    if payload.status == AppointmentStatus.in_progress and appointment.started_at is None:
+        appointment.started_at = datetime.now(timezone.utc)
     appointment.status = payload.status
     db.commit()
     db.refresh(appointment)

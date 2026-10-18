@@ -56,6 +56,11 @@ export function TodaysSchedule() {
     load();
   }
 
+    async function handleStart(appointmentId: string) {
+    await updateAppointmentStatus(appointmentId, "in_progress" as AppointmentStatus);
+    load();
+  }
+
   return (
     <>
       <Table>
@@ -79,6 +84,11 @@ export function TodaysSchedule() {
                 <Button size="sm" variant="outline" onClick={() => setSelectedAppointment(a)}>
                   Notes
                 </Button>
+                {a.status === "scheduled" && (
+                  <Button size="sm" variant="secondary" onClick={() => handleStart(a.id)}>
+                    Start
+                  </Button>
+                )}
                 {a.status !== "completed" && (
                   <Button size="sm" onClick={() => handleMarkComplete(a.id)}>
                     Mark Complete

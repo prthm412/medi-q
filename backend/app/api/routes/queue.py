@@ -44,6 +44,8 @@ def check_in(
     position_data = queue_manager.check_in(appointment.doctor_id, appointment.patient_id)
     if position_data is None:
         raise HTTPException(status_code=409, detail="Already checked in")
+    appointment.checked_in_at = datetime.now(timezone.utc)
+    db.commit()
 
     return QueuePositionResponse(patient_id=appointment.patient_id, **position_data)
 

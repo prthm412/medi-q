@@ -29,6 +29,8 @@ class Appointment(Base):
     )
     urgency_level: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    checked_in_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     patient = relationship("Patient")
     doctor = relationship("Doctor")
