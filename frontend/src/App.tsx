@@ -5,6 +5,7 @@ import { Login } from "@/pages/Login";
 import { Signup } from "@/pages/Signup";
 import { PatientPortal } from "./pages/PatientPortal";
 import { DoctorPortal } from "@/pages/DoctorPortal";
+import { AdminDashboard } from "@/pages/AdminDashboard";
 
 function RoleRedirect() {
   const { user } = useAuth();
@@ -49,7 +50,7 @@ function App() {
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <div className="p-8">Admin Dashboard placeholder</div>
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />
